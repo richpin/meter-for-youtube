@@ -1,0 +1,14 @@
+{
+  "appDescription": {
+    "message": "오늘 유튜브에 쓴 이용 시간과 시청 시간을 유튜브 화면 위에 실시간으로 보여줍니다.",
+    "description": "Extension description shown on the Chrome Web Store and extensions page."
+  },
+  "usageLabel": {
+    "message": "이용",
+    "description": "Overlay label: total time the YouTube tab is focused (browsing, searching, comments included)."
+  },
+  "watchLabel": {
+    "message": "시청",
+    "description": "Overlay label: time a video is actually playing."
+  }
+}

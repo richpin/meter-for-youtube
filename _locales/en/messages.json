@@ -1,0 +1,14 @@
+{
+  "appDescription": {
+    "message": "Shows today's YouTube usage time and watch time in real time as an overlay on the YouTube page.",
+    "description": "Extension description shown on the Chrome Web Store and extensions page."
+  },
+  "usageLabel": {
+    "message": "Usage",
+    "description": "Overlay label: total time the YouTube tab is focused (browsing, searching, comments included)."
+  },
+  "watchLabel": {
+    "message": "Watch",
+    "description": "Overlay label: time a video is actually playing."
+  }
+}

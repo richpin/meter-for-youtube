@@ -60,6 +60,10 @@
     host.style.cssText =
       "position:fixed;top:64px;right:16px;z-index:2147483647;";
 
+    // Localized labels (falls back to default_locale when the browser locale is absent).
+    const usageLabel = chrome.i18n.getMessage("usageLabel");
+    const watchLabel = chrome.i18n.getMessage("watchLabel");
+
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `
       <style>
@@ -84,11 +88,11 @@
       </style>
       <div class="box">
         <div class="row use">
-          <span class="label">▶ 이용</span>
+          <span class="label">▶ ${usageLabel}</span>
           <span class="value" id="focus">--</span>
         </div>
         <div class="row watch">
-          <span class="label">👁 시청</span>
+          <span class="label">👁 ${watchLabel}</span>
           <span class="value" id="watch">--</span>
         </div>
       </div>
