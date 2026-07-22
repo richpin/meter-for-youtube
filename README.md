@@ -1,54 +1,54 @@
 # Meter for YouTube
 
-유튜브를 볼 때 **오늘 얼마나 시간을 썼는지**를 화면 우상단에 실시간으로 보여주는 크롬 확장 프로그램입니다.
-차단하지 않습니다 — 그저 현재 상태를 계속 인지시켜 스스로 절제하도록 돕습니다.
+A Chrome extension that shows **how much time you've spent today** in real time at the top-right of the YouTube screen.
+It doesn't block anything — it just keeps the current state visible so you can pace yourself.
 
-## 무엇을 보여주나
+## What it shows
 
-우상단 오버레이에 두 가지 시간을 위아래로 표시합니다:
+The top-right overlay displays two times, stacked:
 
-- **▶ 이용** — 유튜브 탭을 실제로 보고 있는 전체 시간 (탐색·검색·댓글 포함)
-- **👁 시청** — 영상이 실제로 재생된 시간
+- **▶ Usage** — total time you actually spend looking at a YouTube tab (browsing, searching, comments included)
+- **👁 Watch** — time a video is actually playing
 
-둘의 차이가 곧 **"탐색으로 새어나간 시간"** 입니다.
+The gap between the two is **"time leaked into browsing."**
 
-## 동작 방식
+## How it works
 
-- **이용 시간**: 탭이 화면에 보이고(`visibilityState`) 창이 포커스된(`hasFocus`) 초만 집계
-- **시청 시간**: 페이지의 `<video>`가 재생 중인 초만 집계
-- 1초 단위로 세고, 몇 초마다 `chrome.storage.local`에 날짜별로 누적 저장
-- 모든 데이터는 로컬에만 저장되며 외부로 전송되지 않습니다
-- 유튜브는 SPA라 페이지 이동 시 새로고침이 없으므로, `yt-navigate-finish`와 `MutationObserver`로 오버레이를 유지합니다
-- 오버레이는 Shadow DOM으로 격리되어 유튜브 CSS와 충돌하지 않습니다
+- **Usage time**: only counts seconds while the tab is visible (`visibilityState`) and the window is focused (`hasFocus`)
+- **Watch time**: only counts seconds while the page's `<video>` is playing
+- Counts in 1-second increments and accumulates to `chrome.storage.local` by date every few seconds
+- All data is stored locally only and never sent anywhere
+- YouTube is an SPA with no reload on navigation, so `yt-navigate-finish` and a `MutationObserver` keep the overlay alive
+- The overlay is isolated in a Shadow DOM so it doesn't conflict with YouTube's CSS
 
-## 설치 (개발자 모드)
+## Install (developer mode)
 
-1. `chrome://extensions` 접속
-2. 우상단 **개발자 모드** 켜기
-3. **압축해제된 확장 프로그램을 로드합니다** 클릭
-4. 이 폴더 선택
-5. 유튜브 접속 → 우상단에 시간 오버레이가 뜨는지 확인
+1. Go to `chrome://extensions`
+2. Turn on **Developer mode** at the top-right
+3. Click **Load unpacked**
+4. Select this folder
+5. Open YouTube → confirm the time overlay appears at the top-right
 
-빌드 과정이 없습니다. 코드를 수정하면 확장 프로그램 페이지에서 새로고침 아이콘만 누르면 반영됩니다.
+There is no build step. After editing the code, just click the refresh icon on the extensions page to apply changes.
 
-## 구조
+## Structure
 
 ```
-manifest.json      # MV3 설정
+manifest.json      # MV3 config
 src/
-  content.js       # 오버레이 렌더 + 시간 집계
-  background.js    # service worker, 날짜별 누적 저장
-icons/             # 16 / 48 / 128px (플레이스홀더)
+  content.js       # overlay render + time tracking
+  background.js    # service worker, per-date accumulation
+icons/             # 16 / 48 / 128px (placeholders)
 ```
 
-## 저장 구조
+## Storage format
 
 ```json
 { "2026-07-16": { "focus": 4980, "watch": 2820 } }
 ```
 
-`focus` = 이용 시간(초), `watch` = 시청 시간(초). 90일 지난 기록은 자동 정리됩니다.
+`focus` = usage time (seconds), `watch` = watch time (seconds). Records older than 90 days are cleaned up automatically.
 
-## 상태
+## Status
 
-MVP — 오늘 이용/시청 시간을 오버레이로 표시하는 단계. 색상 변화·임계값 알림 같은 개입 장치는 실사용 후 추가 예정.
+MVP — currently shows today's usage/watch time as an overlay. Intervention features like color changes and threshold alerts are planned after real-world use.

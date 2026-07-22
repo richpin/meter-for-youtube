@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Meter for YouTube",
   "version": "0.1.0",
-  "description": "오늘 유튜브에 쓴 이용 시간과 시청 시간을 유튜브 화면 위에 실시간으로 보여줍니다.",
+  "description": "Shows today's YouTube usage time and watch time in real time as an overlay on the YouTube page.",
   "permissions": ["storage"],
   "host_permissions": ["*://*.youtube.com/*"],
   "background": {

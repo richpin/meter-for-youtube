@@ -1,8 +1,8 @@
-### CLAUDE.md 작성 요령
+### General Guidelines
 
-1. 실수를 했을 때 다시는 반복하지 않도록 이 파일에 작성한다.
-2. 절대 예시까지 들어가며 장황하게 작성하지 않고 짧고 간결하게 작성한다.
+1. Document in this file so you don't repeat mistakes.
+2. Keep this guideline short and concise - never use drawn-out explanations and examples.
 
-### 코드 작성 시 주의사항
+### Coding Instructions
 
-* 코드 내에 모든 주석 및 문장은 영어로 한다. (단 CLAUDE.md 파일 제외)
+* Write all comments and documentation in English.
