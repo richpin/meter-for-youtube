@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #0f0f0f;
+        --card: #1c1c1c;
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.55);
+        --usage: #a0e57e;
+        --watch: #7ecbff;
+        --grid: rgba(255, 255, 255, 0.12);
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 380px;
+        margin: 0;
+        padding: 14px;
+        font-family: "Roboto", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      h1 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+
+      /* Range toggle */
+      .ranges { display: flex; gap: 6px; margin-bottom: 12px; }
+      .range-btn {
+        flex: 1;
+        padding: 5px 0;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid transparent;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .range-btn.active { color: var(--text); border-color: var(--watch); }
+
+      /* Summary tiles */
+      .summary { display: flex; gap: 8px; margin-bottom: 14px; }
+      .tile { flex: 1; background: var(--card); border-radius: 8px; padding: 8px 10px; }
+      .tile .k { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+      .tile .v { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* Legend */
+      .legend { display: flex; gap: 14px; font-size: 12px; margin-bottom: 4px; }
+      .legend .item { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+      .dot { width: 9px; height: 9px; border-radius: 50%; }
+      .dot.usage { background: var(--usage); }
+      .dot.watch { background: var(--watch); }
+
+      /* Chart */
+      #chart { width: 100%; display: block; overflow: visible; }
+      #chart .grid-line { stroke: var(--grid); stroke-width: 1; }
+      #chart .axis { fill: var(--muted); font-size: 9px; }
+      #chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+      #chart .line.usage { stroke: var(--usage); }
+      #chart .line.watch { stroke: var(--watch); }
+      #chart .dot-usage { fill: var(--usage); }
+      #chart .dot-watch { fill: var(--watch); }
+      .empty { color: var(--muted); font-size: 12px; text-align: center; padding: 34px 0; }
+    </style>
+  </head>
+  <body>
+    <h1 data-i18n="popupTitle"></h1>
+
+    <div class="ranges" id="ranges">
+      <button class="range-btn" data-days="7" data-i18n="range7"></button>
+      <button class="range-btn active" data-days="30" data-i18n="range30"></button>
+      <button class="range-btn" data-days="90" data-i18n="range90"></button>
+    </div>
+
+    <div class="summary">
+      <div class="tile">
+        <div class="k" data-i18n="todayUsage"></div>
+        <div class="v" id="today-usage">--</div>
+      </div>
+      <div class="tile">
+        <div class="k" data-i18n="todayWatch"></div>
+        <div class="v" id="today-watch">--</div>
+      </div>
+      <div class="tile">
+        <div class="k" data-i18n="avgUsage"></div>
+        <div class="v" id="avg-usage">--</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="dot usage"></span><span data-i18n="usageLabel"></span></div>
+      <div class="item"><span class="dot watch"></span><span data-i18n="watchLabel"></span></div>
+    </div>
+
+    <div id="chart-wrap"></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -5,6 +5,10 @@
   "default_locale": "en",
   "description": "__MSG_appDescription__",
   "permissions": ["storage"],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "Meter for YouTube"
+  },
   "host_permissions": ["*://*.youtube.com/*"],
   "background": {
     "service_worker": "src/background.js"

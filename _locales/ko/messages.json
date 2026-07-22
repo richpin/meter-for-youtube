@@ -10,5 +10,37 @@
   "watchLabel": {
     "message": "시청",
     "description": "Overlay label: time a video is actually playing."
+  },
+  "popupTitle": {
+    "message": "Meter for YouTube — 추이",
+    "description": "Heading of the popup dashboard."
+  },
+  "range7": {
+    "message": "7일",
+    "description": "Range toggle: show the last 7 days."
+  },
+  "range30": {
+    "message": "30일",
+    "description": "Range toggle: show the last 30 days."
+  },
+  "range90": {
+    "message": "90일",
+    "description": "Range toggle: show the last 90 days."
+  },
+  "todayUsage": {
+    "message": "오늘 이용",
+    "description": "Summary tile: usage time accumulated today."
+  },
+  "todayWatch": {
+    "message": "오늘 시청",
+    "description": "Summary tile: watch time accumulated today."
+  },
+  "avgUsage": {
+    "message": "일평균 이용",
+    "description": "Summary tile: average usage time per active day in the selected range."
+  },
+  "noData": {
+    "message": "아직 데이터가 없습니다",
+    "description": "Shown in place of the chart when the selected range has no records."
   }
 }

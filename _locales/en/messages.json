@@ -10,5 +10,37 @@
   "watchLabel": {
     "message": "Watch",
     "description": "Overlay label: time a video is actually playing."
+  },
+  "popupTitle": {
+    "message": "Meter for YouTube — Trends",
+    "description": "Heading of the popup dashboard."
+  },
+  "range7": {
+    "message": "7 days",
+    "description": "Range toggle: show the last 7 days."
+  },
+  "range30": {
+    "message": "30 days",
+    "description": "Range toggle: show the last 30 days."
+  },
+  "range90": {
+    "message": "90 days",
+    "description": "Range toggle: show the last 90 days."
+  },
+  "todayUsage": {
+    "message": "Today usage",
+    "description": "Summary tile: usage time accumulated today."
+  },
+  "todayWatch": {
+    "message": "Today watch",
+    "description": "Summary tile: watch time accumulated today."
+  },
+  "avgUsage": {
+    "message": "Daily avg usage",
+    "description": "Summary tile: average usage time per active day in the selected range."
+  },
+  "noData": {
+    "message": "No data yet",
+    "description": "Shown in place of the chart when the selected range has no records."
   }
 }
