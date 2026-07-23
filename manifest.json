@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "default_locale": "en",
   "description": "__MSG_appDescription__",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA59j7dZc0mOI+dcLahk94v/TEiMuCnSEZtJLqNgSEkFSg4jt6KGamQBIuY4bBiWb0KeRRK6My/VQg2q89Bkcs1f4TZ/NmAstRJ3J2ns9lNiv/3AdYQepLOLqjGGQkyLeN4JkOBK4cdBPN9pNM/L1PPvgCO0Nqwff5eVdUtVvBhkuKrjHHZExIweZ26NYOCDI9vyU4k4WRekvqzqndKC6MPY+Fw5d3j299AESaPQotgnsW7PrGweFUGxo4IR3Eir0dfIqj2eRY4JApAMHeGLU0SuIkyIptevUszJLwDz34XCnmyiCP8uFDGJkSZ1f1v+KKNfH9ap6EnbGgiHRKr5eNtwIDAQAB",
   "permissions": ["storage"],
   "action": {
     "default_popup": "src/popup.html",

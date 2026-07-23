@@ -7,3 +7,7 @@
 
 # logs
 *.log
+
+# extension signing key — pins the extension ID, never commit
+key.pem
+*.pem

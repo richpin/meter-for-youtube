@@ -23,7 +23,8 @@ The gap between the two is **"time leaked into browsing."**
 - **Usage time**: only counts seconds while the tab is visible (`visibilityState`) and the window is focused (`hasFocus`)
 - **Watch time**: only counts seconds while the page's `<video>` is playing
 - Counts in 1-second increments and accumulates to `chrome.storage.local` by date every few seconds
-- All data is stored locally only and never sent anywhere
+- A backup copy is mirrored to `chrome.storage.sync` so history survives a reinstall (see [Data persistence](#data-persistence))
+- Data stays in your own browser and Google account; nothing is sent to any third party
 - YouTube is an SPA with no reload on navigation, so `yt-navigate-finish` and a `MutationObserver` keep the overlay alive
 - The overlay is isolated in a Shadow DOM so it doesn't conflict with YouTube's CSS
 - The dashboard chart is hand-rolled inline SVG — no chart library, no build step
@@ -70,7 +71,7 @@ icons/             # 16 / 48 / 128px (placeholders)
 { "2026-07-16": { "focus": 4980, "watch": 2820 } }
 ```
 
-`focus` = usage time (seconds), `watch` = watch time (seconds). Records older than 90 days are cleaned up automatically.
+`focus` = usage time (seconds), `watch` = watch time (seconds). Records older than 90 days are cleaned up automatically, in both stores.
 
 To inspect or edit the data, open the service worker DevTools from `chrome://extensions`, then use
 **Application → Storage → Extension storage → Local**, or the console:
@@ -79,6 +80,33 @@ To inspect or edit the data, open the service worker DevTools from `chrome://ext
 chrome.storage.local.get(null, console.log)   // view all days
 chrome.storage.local.remove("2026-07-16")     // delete one day
 ```
+
+## Data persistence
+
+Chrome **deletes `chrome.storage.local` when an extension is uninstalled**, so a Remove → Load unpacked
+cycle wipes the history. Two things guard against that:
+
+- **`"key"` in `manifest.json`** pins the extension ID (`kcpkoempphachphckpfipgmlhfakdele`). Without it, the ID
+  is derived from the folder path, so moving or renaming the project would orphan the data.
+- **`chrome.storage.sync`** keeps a copy in your Google account rather than the local profile. Because the
+  ID is now stable, reinstalling restores the history on the next `onInstalled` / `onStartup`.
+
+`local` remains the store the UI reads; `sync` is only mirrored once ~60s of new tracked time accumulates,
+since sync caps writes at 1800/hour. Restore merges per metric by taking the larger value, so a device that
+tracked time while offline does not lose it.
+
+What survives what:
+
+| Action | History kept |
+|---|---|
+| Reload (↻ icon) | Yes |
+| Update (new version) | Yes |
+| Remove + Load unpacked | Yes — restored from sync |
+| Remove while signed out of Chrome | No |
+| Changing/removing the manifest `key` | No — new ID, sync copy orphaned |
+
+`key.pem` (the private key backing the manifest `key`) is gitignored. **Back it up** — losing it means a new
+extension ID, and the synced history becomes unreachable.
 
 ## Status
 
