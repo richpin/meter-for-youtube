@@ -123,11 +123,11 @@
       </style>
       <div class="box">
         <div class="row use">
-          <span class="label">▶ ${usageLabel}</span>
+          <span class="label">👀 ${usageLabel}</span>
           <span class="value" id="focus">--</span>
         </div>
         <div class="row watch">
-          <span class="label">👁 ${watchLabel}</span>
+          <span class="label">🎬 ${watchLabel}</span>
           <span class="value" id="watch">--</span>
         </div>
       </div>
