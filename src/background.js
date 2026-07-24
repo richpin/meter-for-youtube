@@ -9,8 +9,9 @@
 //   local — the hot store. Written on every flush; no meaningful write quota.
 //   sync  — the durable copy. chrome.storage.local is destroyed when the
 //           extension is uninstalled, while sync lives in the user's Google
-//           account and comes back on reinstall (the manifest "key" pins the
-//           extension ID so the account data still matches).
+//           account and comes back on reinstall. The published store build has
+//           a permanent extension ID, so the account data still matches after
+//           a reinstall.
 // sync is only mirrored occasionally because it caps writes (1800/hour).
 
 const RETENTION_DAYS = 90; // entries older than this are pruned automatically
