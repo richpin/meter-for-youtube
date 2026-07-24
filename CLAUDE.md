@@ -13,3 +13,5 @@
 ### Coding Instructions
 
 * Write all comments and documentation in English.
+* Do not try to run nodejs runtime commands (e.g. `node`, `npm`)
+* After browser validation, always clean up what you created (close the Chrome tab and stop any local server).
