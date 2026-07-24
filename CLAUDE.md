@@ -2,6 +2,7 @@
 
 * When showing options, always display recommendations if there are multiple choices available
 * Is there any details to decide, always ask the user for more information (do not make assumptions or decisions)
+* Don't save preference on your memory file by yourself. If there is something to be saved, let the user mention it
 
 ### General Guidelines
 
