@@ -39,6 +39,20 @@ Uses Chrome's native i18n, so the UI follows the browser's language automaticall
 
 Every key used in code must exist in each locale file, or `chrome.i18n.getMessage` returns an empty string.
 
+## Theme
+
+Light and dark are both supported, on the popup and the on-page overlay.
+
+- **Auto** (default) follows the OS/browser setting via `prefers-color-scheme`
+- **Light** / **Dark** override it, chosen from the popup footer
+
+The choice is stored once under `__theme` in `chrome.storage.local` and shared by both surfaces, so the
+overlay repaints immediately when the popup changes it. The overlay deliberately follows this setting rather
+than YouTube's own theme, so the two surfaces never disagree.
+
+Dark is a separately chosen set of colors rather than an inversion of light — the chart series in particular
+use steps picked for each background, since a color that reads well on near-black is washed out on white.
+
 ## Install (developer mode)
 
 1. Go to `chrome://extensions`

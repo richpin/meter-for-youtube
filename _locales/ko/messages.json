@@ -42,5 +42,21 @@
   "noData": {
     "message": "아직 데이터가 없습니다",
     "description": "Shown in place of the chart when the selected range has no records."
+  },
+  "themeLabel": {
+    "message": "테마",
+    "description": "Label for the light/dark theme control."
+  },
+  "themeAuto": {
+    "message": "자동",
+    "description": "Theme option: follow the operating system setting."
+  },
+  "themeLight": {
+    "message": "라이트",
+    "description": "Theme option: always use the light theme."
+  },
+  "themeDark": {
+    "message": "다크",
+    "description": "Theme option: always use the dark theme."
   }
 }

@@ -10,6 +10,10 @@
 (() => {
   const HOST_ID = "meter-for-youtube-host";
   const FLUSH_INTERVAL_SEC = 5; // how often to persist to storage (limits loss on tab close)
+  const THEME_KEY = "__theme"; // "auto" | "light" | "dark", shared with the popup
+
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  let themeMode = "auto";
 
   // Today's totals (seconds): baseline loaded from storage + this session's accumulation.
   let baseline = { focus: 0, watch: 0 };
@@ -49,6 +53,20 @@
     valueEls.watch.textContent = fmt(baseline.watch + session.watch);
   }
 
+  // ---- Theme ----------------------------------------------------------------
+
+  // The overlay follows the same preference as the popup rather than YouTube's
+  // own theme, so both surfaces always agree.
+  function effectiveTheme() {
+    if (themeMode === "light" || themeMode === "dark") return themeMode;
+    return darkQuery.matches ? "dark" : "light";
+  }
+
+  function applyTheme() {
+    const host = document.getElementById(HOST_ID);
+    if (host) host.dataset.theme = effectiveTheme();
+  }
+
   // ---- (3) Build overlay (Shadow DOM) ---------------------------------------
 
   function buildOverlay() {
@@ -59,6 +77,7 @@
     // The host only handles positioning; actual styling lives inside the shadow root.
     host.style.cssText =
       "position:fixed;top:64px;right:16px;z-index:2147483647;";
+    host.dataset.theme = effectiveTheme();
 
     // Localized labels (falls back to default_locale when the browser locale is absent).
     const usageLabel = chrome.i18n.getMessage("usageLabel");
@@ -67,13 +86,29 @@
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `
       <style>
+        /* Light is the base; the dark steps are chosen for the dark surface.
+           :host([data-theme]) is stamped from the shared preference. */
+        :host {
+          --bg: rgba(252, 252, 251, 0.92);
+          --text: #0b0b0b;
+          --text-2: #52514e;
+          --watch: #eb6834;
+          --shadow: rgba(11, 11, 11, 0.18);
+        }
+        :host([data-theme="dark"]) {
+          --bg: rgba(15, 15, 15, 0.85);
+          --text: #ffffff;
+          --text-2: #c3c2b7;
+          --watch: #d95926;
+          --shadow: rgba(0, 0, 0, 0.4);
+        }
         .box {
-          font-family: "Roboto", Arial, sans-serif;
-          background: rgba(15, 15, 15, 0.85);
-          color: #fff;
+          font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+          background: var(--bg);
+          color: var(--text);
           border-radius: 10px;
           padding: 8px 12px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 2px 12px var(--shadow);
           backdrop-filter: blur(4px);
           user-select: none;
           line-height: 1.35;
@@ -82,9 +117,9 @@
         }
         .row { display: flex; justify-content: space-between; gap: 12px; }
         .row + .row { margin-top: 2px; }
-        .label { opacity: 0.7; }
+        .label { color: var(--text-2); }
         .value { font-variant-numeric: tabular-nums; font-weight: 600; }
-        .watch .value { color: #7ecbff; }
+        .watch .value { color: var(--watch); }
       </style>
       <div class="box">
         <div class="row use">
@@ -151,7 +186,25 @@
       render();
     });
 
+    chrome.storage.local.get(THEME_KEY, (res) => {
+      if (chrome.runtime.lastError || !res) return;
+      themeMode = res[THEME_KEY] || "auto";
+      applyTheme();
+    });
+
     buildOverlay();
+
+    // Repaint open YouTube tabs the moment the popup changes the preference.
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local" || !changes[THEME_KEY]) return;
+      themeMode = changes[THEME_KEY].newValue || "auto";
+      applyTheme();
+    });
+
+    // Only relevant while following the OS setting.
+    darkQuery.addEventListener("change", () => {
+      if (themeMode === "auto") applyTheme();
+    });
 
     // 1-second tracking tick
     setInterval(tick, 1000);

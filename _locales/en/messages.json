@@ -42,5 +42,21 @@
   "noData": {
     "message": "No data yet",
     "description": "Shown in place of the chart when the selected range has no records."
+  },
+  "themeLabel": {
+    "message": "Theme",
+    "description": "Label for the light/dark theme control."
+  },
+  "themeAuto": {
+    "message": "Auto",
+    "description": "Theme option: follow the operating system setting."
+  },
+  "themeLight": {
+    "message": "Light",
+    "description": "Theme option: always use the light theme."
+  },
+  "themeDark": {
+    "message": "Dark",
+    "description": "Theme option: always use the dark theme."
   }
 }

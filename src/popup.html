@@ -3,63 +3,141 @@
   <head>
     <meta charset="utf-8" />
     <style>
+      /* Light is the base; dark is a separately chosen set of steps, not an
+         inversion. The media query follows the OS, and [data-theme] (stamped by
+         popup.js from the saved preference) must beat it in both directions. */
       :root {
-        --bg: #0f0f0f;
-        --card: #1c1c1c;
-        --text: #ffffff;
-        --muted: rgba(255, 255, 255, 0.55);
-        --usage: #a0e57e;
-        --watch: #7ecbff;
-        --grid: rgba(255, 255, 255, 0.12);
+        color-scheme: light;
+        --plane: #f9f9f7;
+        --surface: #fcfcfb;
+        --text: #0b0b0b;
+        --text-2: #52514e;
+        --muted: #898781;
+        --grid: #e1e0d9;
+        --border: rgba(11, 11, 11, 0.1);
+        --usage: #2a78d6;
+        --watch: #eb6834;
       }
+      @media (prefers-color-scheme: dark) {
+        :root:where(:not([data-theme="light"])) {
+          color-scheme: dark;
+          --plane: #0d0d0d;
+          --surface: #1a1a19;
+          --text: #ffffff;
+          --text-2: #c3c2b7;
+          --muted: #898781;
+          --grid: #2c2c2a;
+          --border: rgba(255, 255, 255, 0.1);
+          --usage: #3987e5;
+          --watch: #d95926;
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --plane: #0d0d0d;
+        --surface: #1a1a19;
+        --text: #ffffff;
+        --text-2: #c3c2b7;
+        --muted: #898781;
+        --grid: #2c2c2a;
+        --border: rgba(255, 255, 255, 0.1);
+        --usage: #3987e5;
+        --watch: #d95926;
+      }
+
       * { box-sizing: border-box; }
       body {
         width: 380px;
         margin: 0;
         padding: 14px;
-        font-family: "Roboto", Arial, sans-serif;
-        background: var(--bg);
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--plane);
         color: var(--text);
       }
       h1 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
 
-      /* Range toggle */
+      /* Range filter — sits above everything it scopes, never inside the chart card */
       .ranges { display: flex; gap: 6px; margin-bottom: 12px; }
       .range-btn {
         flex: 1;
         padding: 5px 0;
         font-size: 12px;
-        color: var(--muted);
-        background: var(--card);
-        border: 1px solid transparent;
+        font-family: inherit;
+        color: var(--text-2);
+        background: var(--surface);
+        border: 1px solid var(--border);
         border-radius: 6px;
         cursor: pointer;
       }
-      .range-btn.active { color: var(--text); border-color: var(--watch); }
+      .range-btn:hover { border-color: var(--muted); }
+      .range-btn.active {
+        color: var(--text);
+        border-color: var(--usage);
+        font-weight: 600;
+      }
 
-      /* Summary tiles */
-      .summary { display: flex; gap: 8px; margin-bottom: 14px; }
-      .tile { flex: 1; background: var(--card); border-radius: 8px; padding: 8px 10px; }
-      .tile .k { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
-      .tile .v { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+      /* Summary tiles — proportional figures, not tabular (these are standalone) */
+      .summary { display: flex; gap: 8px; margin-bottom: 12px; }
+      .tile {
+        flex: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      .tile .k { font-size: 11px; color: var(--text-2); margin-bottom: 2px; }
+      .tile .v { font-size: 15px; font-weight: 600; }
 
-      /* Legend */
-      .legend { display: flex; gap: 14px; font-size: 12px; margin-bottom: 4px; }
-      .legend .item { display: flex; align-items: center; gap: 5px; color: var(--muted); }
-      .dot { width: 9px; height: 9px; border-radius: 50%; }
-      .dot.usage { background: var(--usage); }
-      .dot.watch { background: var(--watch); }
+      /* Chart card — the surface the palette was validated against */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .legend { display: flex; gap: 14px; font-size: 12px; margin-bottom: 6px; }
+      .legend .item { display: flex; align-items: center; gap: 5px; color: var(--text-2); }
+      .swatch { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+      .swatch.usage { background: var(--usage); }
+      .swatch.watch { background: var(--watch); }
 
-      /* Chart */
       #chart { width: 100%; display: block; overflow: visible; }
       #chart .grid-line { stroke: var(--grid); stroke-width: 1; }
-      #chart .axis { fill: var(--muted); font-size: 9px; }
+      #chart .axis {
+        fill: var(--muted);
+        font-size: 9px;
+        font-variant-numeric: tabular-nums; /* axis ticks do align vertically */
+      }
       #chart .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
       #chart .line.usage { stroke: var(--usage); }
       #chart .line.watch { stroke: var(--watch); }
-      #chart .dot-usage { fill: var(--usage); }
-      #chart .dot-watch { fill: var(--watch); }
-      .empty { color: var(--muted); font-size: 12px; text-align: center; padding: 34px 0; }
+      /* 2px surface ring so overlapping markers separate without a hard border */
+      #chart .marker { stroke: var(--surface); stroke-width: 2; }
+      #chart .marker.usage { fill: var(--usage); }
+      #chart .marker.watch { fill: var(--watch); }
+      .empty { color: var(--text-2); font-size: 12px; text-align: center; padding: 34px 0; }
+
+      /* Theme control */
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+      }
+      .footer-label { font-size: 11px; color: var(--muted); }
+      .themes { display: flex; gap: 4px; }
+      .theme-btn {
+        padding: 4px 9px;
+        font-size: 11px;
+        font-family: inherit;
+        color: var(--text-2);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .theme-btn:hover { border-color: var(--muted); }
+      .theme-btn.active { color: var(--text); border-color: var(--usage); font-weight: 600; }
     </style>
   </head>
   <body>
@@ -86,12 +164,22 @@
       </div>
     </div>
 
-    <div class="legend">
-      <div class="item"><span class="dot usage"></span><span data-i18n="usageLabel"></span></div>
-      <div class="item"><span class="dot watch"></span><span data-i18n="watchLabel"></span></div>
+    <div class="card">
+      <div class="legend">
+        <div class="item"><span class="swatch usage"></span><span data-i18n="usageLabel"></span></div>
+        <div class="item"><span class="swatch watch"></span><span data-i18n="watchLabel"></span></div>
+      </div>
+      <div id="chart-wrap"></div>
     </div>
 
-    <div id="chart-wrap"></div>
+    <div class="footer">
+      <span class="footer-label" data-i18n="themeLabel"></span>
+      <div class="themes" id="themes">
+        <button class="theme-btn" data-mode="auto" data-i18n="themeAuto"></button>
+        <button class="theme-btn" data-mode="light" data-i18n="themeLight"></button>
+        <button class="theme-btn" data-mode="dark" data-i18n="themeDark"></button>
+      </div>
+    </div>
 
     <script src="popup.js"></script>
   </body>

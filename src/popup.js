@@ -7,6 +7,7 @@
 (() => {
   const DEFAULT_RANGE = 30;
   const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
+  const THEME_KEY = "__theme"; // "auto" | "light" | "dark", shared with the overlay
 
   // Chart geometry (viewBox units; the SVG scales to the popup width)
   const W = 360, H = 180;
@@ -124,8 +125,8 @@
         ? series
             .map(
               (d, i) => `
-        <circle class="dot-usage" cx="${x(i).toFixed(1)}" cy="${y(d.focus).toFixed(1)}" r="2.5" />
-        <circle class="dot-watch" cx="${x(i).toFixed(1)}" cy="${y(d.watch).toFixed(1)}" r="2.5" />`
+        <circle class="marker usage" cx="${x(i).toFixed(1)}" cy="${y(d.focus).toFixed(1)}" r="4" />
+        <circle class="marker watch" cx="${x(i).toFixed(1)}" cy="${y(d.watch).toFixed(1)}" r="4" />`
             )
             .join("")
         : "";
@@ -154,6 +155,29 @@
     });
   }
 
+  // "auto" leaves the stamp off so the prefers-color-scheme media query wins;
+  // an explicit choice stamps the root and overrides it in both directions.
+  function applyTheme(mode) {
+    if (mode === "light" || mode === "dark") {
+      document.documentElement.dataset.theme = mode;
+    } else {
+      delete document.documentElement.dataset.theme;
+    }
+    document
+      .querySelectorAll(".theme-btn")
+      .forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
+  }
+
+  function bindThemes() {
+    document.getElementById("themes").addEventListener("click", (e) => {
+      const btn = e.target.closest(".theme-btn");
+      if (!btn) return;
+      const mode = btn.dataset.mode;
+      applyTheme(mode);
+      chrome.storage.local.set({ [THEME_KEY]: mode });
+    });
+  }
+
   function bindRanges() {
     document.getElementById("ranges").addEventListener("click", (e) => {
       const btn = e.target.closest(".range-btn");
@@ -169,8 +193,11 @@
   async function init() {
     localize();
     bindRanges();
+    bindThemes();
 
     const all = await chrome.storage.local.get(null);
+    applyTheme(all[THEME_KEY] || "auto");
+
     history = {};
     for (const [k, v] of Object.entries(all)) {
       if (DATE_KEY.test(k)) history[k] = v; // ignore any non-date keys
