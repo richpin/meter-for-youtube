@@ -31,9 +31,15 @@
   }
 
   function isWatching() {
-    const video = document.querySelector("video");
-    if (!video) return false;
-    return !video.paused && !video.ended && video.readyState > 2;
+    // Shorts keep several <video> elements mounted at once (the active short
+    // plus preloaded neighbors), and the first in DOM order is usually paused.
+    // Count the tick if ANY video is actively playing so both /watch and
+    // /shorts are tracked.
+    const videos = document.querySelectorAll("video");
+    for (const video of videos) {
+      if (!video.paused && !video.ended && video.readyState > 2) return true;
+    }
+    return false;
   }
 
   // ---- Display formatting ---------------------------------------------------
@@ -154,7 +160,9 @@
 
   function tick() {
     if (isUsing()) session.focus += 1;
-    if (isWatching()) session.watch += 1;
+    // Only count watch while the tab is the visible foreground tab, so audio
+    // playing on a hidden/background tab does not inflate watch past usage.
+    if (document.visibilityState === "visible" && isWatching()) session.watch += 1;
     render();
 
     tickCount += 1;

@@ -11,3 +11,6 @@
 # extension signing key — pins the extension ID, never commit
 key.pem
 *.pem
+
+# resources for Chrome Web Store
+store/
