@@ -41,8 +41,8 @@ async function mirrorToSync(key, day) {
   }
 }
 
-async function addTime(focusDelta, watchDelta) {
-  const key = todayKey();
+async function addTime(focusDelta, watchDelta, dateKeyOverride) {
+  const key = dateKeyOverride || todayKey();
   const stored = await chrome.storage.local.get([key, LAST_SYNC_KEY]);
   const day = stored[key] || { focus: 0, watch: 0 };
   day.focus += focusDelta;
@@ -116,7 +116,7 @@ async function pruneOldEntries() {
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "ADD_TIME") {
-    addTime(msg.focus || 0, msg.watch || 0).then((day) => sendResponse(day));
+    addTime(msg.focus || 0, msg.watch || 0, msg.date).then((day) => sendResponse(day));
     return true; // keep the channel open for the async response
   }
   if (msg.type === "GET_TODAY") {

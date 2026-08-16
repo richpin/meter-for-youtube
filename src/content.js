@@ -15,9 +15,18 @@
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   let themeMode = "auto";
 
-  // Today's totals (seconds): baseline loaded from storage + this session's accumulation.
-  let baseline = { focus: 0, watch: 0 };
-  let session = { focus: 0, watch: 0 }; // accumulated since this page opened
+  function todayKey() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  let currentDateKey = todayKey();
+  // Today's totals (seconds): latest total from storage + this session's un-flushed delta.
+  let storedToday = { focus: 0, watch: 0 };
+  let session = { focus: 0, watch: 0 }; // accumulated on this tab
   let flushed = { focus: 0, watch: 0 }; // portion already sent to storage
 
   let valueEls = null; // { focus, watch } — the number spans inside the overlay
@@ -55,8 +64,10 @@
 
   function render() {
     if (!valueEls) return;
-    valueEls.focus.textContent = fmt(baseline.focus + session.focus);
-    valueEls.watch.textContent = fmt(baseline.watch + session.watch);
+    const curFocus = storedToday.focus + (session.focus - flushed.focus);
+    const curWatch = storedToday.watch + (session.watch - flushed.watch);
+    valueEls.focus.textContent = fmt(curFocus);
+    valueEls.watch.textContent = fmt(curWatch);
   }
 
   // ---- Theme ----------------------------------------------------------------
@@ -158,7 +169,21 @@
 
   // ---- Tracking loop --------------------------------------------------------
 
+  function checkDayRollover() {
+    const today = todayKey();
+    if (today !== currentDateKey) {
+      const oldDate = currentDateKey;
+      flush(oldDate);
+      currentDateKey = today;
+      storedToday = { focus: 0, watch: 0 };
+      session = { focus: 0, watch: 0 };
+      flushed = { focus: 0, watch: 0 };
+      render();
+    }
+  }
+
   function tick() {
+    checkDayRollover();
     if (isUsing()) session.focus += 1;
     // Only count watch while the tab is the visible foreground tab, so audio
     // playing on a hidden/background tab does not inflate watch past usage.
@@ -169,18 +194,25 @@
     if (tickCount % FLUSH_INTERVAL_SEC === 0) flush();
   }
 
-  function flush() {
+  function flush(dateKeyOverride) {
     const focusDelta = session.focus - flushed.focus;
     const watchDelta = session.watch - flushed.watch;
     if (focusDelta === 0 && watchDelta === 0) return;
 
+    const targetDate = dateKeyOverride || currentDateKey;
+    const sentFocus = session.focus;
+    const sentWatch = session.watch;
+    flushed.focus = sentFocus;
+    flushed.watch = sentWatch;
+
     chrome.runtime.sendMessage(
-      { type: "ADD_TIME", focus: focusDelta, watch: watchDelta },
+      { type: "ADD_TIME", focus: focusDelta, watch: watchDelta, date: targetDate },
       () => {
-        // Only advance `flushed` after a successful save; otherwise the next flush retries.
-        if (chrome.runtime.lastError) return;
-        flushed.focus = session.focus;
-        flushed.watch = session.watch;
+        if (chrome.runtime.lastError) {
+          // On failure, roll back so the next flush retries
+          flushed.focus -= focusDelta;
+          flushed.watch -= watchDelta;
+        }
       }
     );
   }
@@ -188,25 +220,29 @@
   // ---- Init -----------------------------------------------------------------
 
   function init() {
-    chrome.runtime.sendMessage({ type: "GET_TODAY" }, (day) => {
-      if (chrome.runtime.lastError || !day) return;
-      baseline = { focus: day.focus || 0, watch: day.watch || 0 };
-      render();
-    });
+    currentDateKey = todayKey();
 
-    chrome.storage.local.get(THEME_KEY, (res) => {
+    chrome.storage.local.get([currentDateKey, THEME_KEY], (res) => {
       if (chrome.runtime.lastError || !res) return;
-      themeMode = res[THEME_KEY] || "auto";
+      if (res[currentDateKey]) storedToday = res[currentDateKey];
+      if (res[THEME_KEY]) themeMode = res[THEME_KEY];
       applyTheme();
+      render();
     });
 
     buildOverlay();
 
-    // Repaint open YouTube tabs the moment the popup changes the preference.
+    // Repaint open YouTube tabs on theme change, and sync today's totals across tabs
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area !== "local" || !changes[THEME_KEY]) return;
-      themeMode = changes[THEME_KEY].newValue || "auto";
-      applyTheme();
+      if (area !== "local") return;
+      if (changes[THEME_KEY]) {
+        themeMode = changes[THEME_KEY].newValue || "auto";
+        applyTheme();
+      }
+      if (changes[currentDateKey]) {
+        storedToday = changes[currentDateKey].newValue || { focus: 0, watch: 0 };
+        render();
+      }
     });
 
     // Only relevant while following the OS setting.
@@ -228,7 +264,7 @@
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") flush();
     });
-    window.addEventListener("pagehide", flush);
+    window.addEventListener("pagehide", () => flush());
   }
 
   init();

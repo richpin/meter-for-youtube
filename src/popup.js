@@ -203,6 +203,18 @@
       if (DATE_KEY.test(k)) history[k] = v; // ignore any non-date keys
     }
     render();
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== "local") return;
+      let updated = false;
+      for (const [k, change] of Object.entries(changes)) {
+        if (DATE_KEY.test(k)) {
+          history[k] = change.newValue || { focus: 0, watch: 0 };
+          updated = true;
+        }
+      }
+      if (updated) render();
+    });
   }
 
   init();
