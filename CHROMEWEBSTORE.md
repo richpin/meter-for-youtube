@@ -14,10 +14,9 @@ See how much of your day YouTube is taking, with live usage and watch times show
 on the page. Compare daily trends over 7, 30, or 90 days in the toolbar popup.
 
 Choose hours and minutes while the daily usage limit is off, then switch it on.
-Turn it off again to change the time. When you reach it,
-playback stops and a quiet break page replaces YouTube. Your allowance starts
-again at local midnight. Change or disable the limit in the popup at any time.
-The limit is off until you enable it.
+Turn it off again to change the time. When you reach the limit, playback stops
+and a quiet break page replaces YouTube. Your allowance starts again at local
+midnight. The limit is off until you enable it.
 
 English and Korean are supported, with automatic, light, and dark themes.
 Your daily totals stay in your browser and your own Google account backup.
@@ -73,11 +72,11 @@ in the developer dashboard before submitting a release.
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| Unreleased (manifest currently 0.1.1) | 2026-11-10 | Optional daily Usage limit with an immediate toggle and hour/minute menus, localized break page, reliable concurrent usage accumulation, and prevention of duplicate time writes when an existing background worker is still active. | Draft |
+| 0.1.2 | 2026-11-10 | Optional daily Usage limit with an immediate toggle and hour/minute menus, localized break page, and more reliable usage accumulation. | Draft |
 
 ## Review Notes
 
 The limit applies to this browser's Usage, not a combined allowance across devices.
-Users can change or disable the limit immediately through the popup. New popup
-and break-page screenshots are needed for the next store release. No release
-version has been assigned or submitted by this change.
+Users can turn the limit off immediately, change its duration, and turn it on
+again through the popup. The publisher will update the popup and break-page
+screenshots before submitting 0.1.2. This release has not been submitted yet.
