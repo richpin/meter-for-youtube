@@ -1,6 +1,6 @@
 {
   "appDescription": {
-    "message": "오늘 유튜브에 쓴 이용 시간과 시청 시간을 유튜브 화면 위에 실시간으로 보여줍니다.",
+    "message": "오늘 유튜브 이용 시간과 시청 시간을 실시간으로 확인하고, 일일 이용 한도를 설정하세요.",
     "description": "Extension description shown on the Chrome Web Store and extensions page."
   },
   "usageLabel": {
@@ -58,5 +58,32 @@
   "themeDark": {
     "message": "다크",
     "description": "Theme option: always use the dark theme."
+  },
+  "dailyLimit": {
+    "message": "일일 이용 한도"
+  },
+  "limitHours": {
+    "message": "시간"
+  },
+  "limitMinutes": {
+    "message": "분"
+  },
+  "limitNote": {
+    "message": "시간을 바꾸려면 토글을 꺼 주세요. 켜면 한도가 적용되고 자정에 초기화돼요."
+  },
+  "limitInvalid": {
+    "message": "한도를 켜려면 1분 이상 선택해 주세요."
+  },
+  "limitSaveError": {
+    "message": "한도를 저장하지 못했어요. 다시 시도해 주세요."
+  },
+  "limitLoadError": {
+    "message": "한도를 불러오지 못했어요. 팝업을 다시 열어 주세요."
+  },
+  "blockedTitle": {
+    "message": "오늘의 이용 한도에 도달했어요."
+  },
+  "blockedMessage": {
+    "message": "오늘 유튜브는 여기까지. 잠시 쉬어 가요. 😌"
   }
 }

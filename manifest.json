@@ -4,7 +4,9 @@
   "version": "0.1.1",
   "default_locale": "en",
   "description": "__MSG_appDescription__",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "action": {
     "default_popup": "src/popup.html",
     "default_title": "Meter for YouTube"
@@ -14,14 +16,33 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["src/content.js"],
-      "run_at": "document_idle"
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "src/meter.js",
+        "src/usage-ledger.js",
+        "src/content.js"
+      ],
+      "run_at": "document_start",
+      "css": [
+        "src/content.css"
+      ]
     }
   ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/blocked.html"
+      ],
+      "matches": [
+        "*://*.youtube.com/*"
+      ]
+    }
+  ]
 }

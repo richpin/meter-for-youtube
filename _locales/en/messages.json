@@ -1,6 +1,6 @@
 {
   "appDescription": {
-    "message": "Shows today's YouTube usage time and watch time in real time as an overlay on the YouTube page.",
+    "message": "Track today’s YouTube usage and watch time live, and set an optional daily usage limit.",
     "description": "Extension description shown on the Chrome Web Store and extensions page."
   },
   "usageLabel": {
@@ -58,5 +58,32 @@
   "themeDark": {
     "message": "Dark",
     "description": "Theme option: always use the dark theme."
+  },
+  "dailyLimit": {
+    "message": "Daily usage limit"
+  },
+  "limitHours": {
+    "message": "Hours"
+  },
+  "limitMinutes": {
+    "message": "Minutes"
+  },
+  "limitNote": {
+    "message": "Turn off to change the time. Turn on to apply your limit. Resets at midnight."
+  },
+  "limitInvalid": {
+    "message": "Choose at least 1 minute to turn on the limit."
+  },
+  "limitSaveError": {
+    "message": "Couldn’t save your limit. Please try again."
+  },
+  "limitLoadError": {
+    "message": "Couldn’t load your limit. Reopen the popup to try again."
+  },
+  "blockedTitle": {
+    "message": "You’ve reached your daily limit."
+  },
+  "blockedMessage": {
+    "message": "That’s enough YouTube for today. Let’s take a break. 😌"
   }
 }

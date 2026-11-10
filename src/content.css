@@ -1,0 +1,5 @@
+/* Keep YouTube out of view while checking the saved daily limit or saving the
+   final seconds before leaving. The content script always clears the check. */
+html[data-meter-checking], html[data-meter-blocking] {
+  visibility: hidden !important;
+}

@@ -2,49 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" href="theme.css" />
     <style>
-      /* Light is the base; dark is a separately chosen set of steps, not an
-         inversion. The media query follows the OS, and [data-theme] (stamped by
-         popup.js from the saved preference) must beat it in both directions. */
-      :root {
-        color-scheme: light;
-        --plane: #f9f9f7;
-        --surface: #fcfcfb;
-        --text: #0b0b0b;
-        --text-2: #52514e;
-        --muted: #898781;
-        --grid: #e1e0d9;
-        --border: rgba(11, 11, 11, 0.1);
-        --usage: #2a78d6;
-        --watch: #eb6834;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:where(:not([data-theme="light"])) {
-          color-scheme: dark;
-          --plane: #0d0d0d;
-          --surface: #1a1a19;
-          --text: #ffffff;
-          --text-2: #c3c2b7;
-          --muted: #898781;
-          --grid: #2c2c2a;
-          --border: rgba(255, 255, 255, 0.1);
-          --usage: #3987e5;
-          --watch: #d95926;
-        }
-      }
-      :root[data-theme="dark"] {
-        color-scheme: dark;
-        --plane: #0d0d0d;
-        --surface: #1a1a19;
-        --text: #ffffff;
-        --text-2: #c3c2b7;
-        --muted: #898781;
-        --grid: #2c2c2a;
-        --border: rgba(255, 255, 255, 0.1);
-        --usage: #3987e5;
-        --watch: #d95926;
-      }
-
       * { box-sizing: border-box; }
       body {
         width: 380px;
@@ -117,6 +76,31 @@
       #chart .marker.watch { fill: var(--watch); }
       .empty { color: var(--text-2); font-size: 12px; text-align: center; padding: 34px 0; }
 
+      .limit { margin-top: 12px; }
+      .limit-title { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; }
+      .limit-toggle {
+        width: 34px; height: 20px; padding: 2px; border: 0; border-radius: 10px;
+        background: var(--muted); cursor: pointer; display: flex; align-items: center;
+      }
+      .limit-toggle[aria-checked="true"] { background: var(--usage); }
+      .limit-toggle span {
+        width: 16px; height: 16px; border-radius: 50%; background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transform: translateX(0);
+      }
+      .limit-toggle[aria-checked="true"] span { transform: translateX(14px); }
+      .limit-fields { display: flex; gap: 8px; margin-top: 10px; }
+      .limit-fields label { flex: 1; display: grid; gap: 4px; font-size: 11px; color: var(--text-2); }
+      .limit-fields select {
+        width: 100%; padding: 6px 8px; border: 1px solid var(--border);
+        border-radius: 5px; background: var(--plane); color: var(--text); font: inherit;
+      }
+      .limit-fields select:disabled { opacity: .5; }
+      .limit-note { font-size: 11px; color: var(--text-2); line-height: 1.5; margin: 8px 0 0; }
+      .limit-status { font-size: 11px; line-height: 1.5; margin: 4px 0 0; }
+      .limit-status:empty { display: none; }
+      button:disabled { opacity: .5; cursor: default; }
+      :focus-visible { outline: 2px solid var(--usage); outline-offset: 2px; }
+
       /* Theme control */
       .footer {
         display: flex;
@@ -172,6 +156,19 @@
       <div id="chart-wrap"></div>
     </div>
 
+    <section class="card limit" aria-labelledby="limit-label">
+      <div class="limit-title">
+        <span id="limit-label" data-i18n="dailyLimit"></span>
+        <button class="limit-toggle" id="limit-enabled" type="button" role="switch" aria-checked="false" aria-labelledby="limit-label" disabled><span aria-hidden="true"></span></button>
+      </div>
+      <div class="limit-fields">
+        <label><span data-i18n="limitHours"></span><select id="limit-hours" disabled></select></label>
+        <label><span data-i18n="limitMinutes"></span><select id="limit-minutes" disabled></select></label>
+      </div>
+      <p class="limit-note" data-i18n="limitNote"></p>
+      <p class="limit-status" id="limit-status" role="status" aria-live="polite"></p>
+    </section>
+
     <div class="footer">
       <span class="footer-label" data-i18n="themeLabel"></span>
       <div class="themes" id="themes">
@@ -181,6 +178,7 @@
       </div>
     </div>
 
+    <script src="meter.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

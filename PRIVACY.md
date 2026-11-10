@@ -1,6 +1,6 @@
 # Privacy Policy — Meter for YouTube
 
-_Last updated: 2026-07-25_
+_Last updated: 2026-11-09_
 
 Meter for YouTube ("the extension") is built to respect your privacy. This
 policy explains what data the extension handles and how.
@@ -20,14 +20,18 @@ values while a YouTube tab is open:
 - **Watch time** — how long a video is actually playing.
 
 These are stored only as daily totals (a number of seconds per date). The
-extension also stores one setting: your chosen theme (auto, light, or dark).
+extension also stores your chosen theme (auto, light, or dark) and optional daily
+usage limit. These settings stay on your device.
 
 ## What the extension does NOT record
 
 - No names, email addresses, or any personally identifiable information.
 - No passwords, payment, health, or location data.
-- No browsing history — it does **not** record which pages, videos, or URLs
-  you visit, page titles, or search queries.
+- No stored browsing history — it does **not** save which pages, videos, or URLs
+  you visit, page titles, or search queries. To return you to the original page
+  after a daily limit is lifted, the original YouTube URL is temporarily included
+  in the break page's URL fragment. It is not written to extension storage,
+  synced, or sent over the network.
 - No page content, clicks, keystrokes, or mouse activity.
 
 ## Where your data is stored
@@ -50,9 +54,10 @@ and clearing the extension's synced data from your Google account.
 
 ## Permissions
 
-- **storage** — to save your daily totals and theme setting as described above.
-- **Host access to `youtube.com`** — so the extension can display its overlay
-  and measure time on YouTube pages. It is limited to YouTube and used for no
+- **storage** — to save your daily totals, theme, and daily usage limit as described above.
+- **Host access to `youtube.com`** — so the extension can display its overlay,
+  measure time on YouTube pages, and replace YouTube with a break page when
+  your daily usage limit is reached. It is limited to YouTube and used for no
   other purpose.
 
 ## Changes to this policy

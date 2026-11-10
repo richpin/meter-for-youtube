@@ -178,6 +178,64 @@
     });
   }
 
+  function bindLimit(savedLimit) {
+    const { LIMIT_KEY, DEFAULT_LIMIT, validMinutes } = Meter;
+    const toggle = document.getElementById("limit-enabled");
+    const hours = document.getElementById("limit-hours");
+    const minutes = document.getElementById("limit-minutes");
+    const status = document.getElementById("limit-status");
+    let limit = savedLimit || DEFAULT_LIMIT;
+    let saving = false;
+
+    for (const [select, count] of [[hours, 24], [minutes, 60]]) {
+      for (let value = 0; value < count; value++) {
+        select.add(new Option(String(value).padStart(2, "0"), String(value)));
+      }
+    }
+    function showSelection() {
+      hours.value = Math.floor(limit.minutes / 60);
+      minutes.value = limit.minutes % 60;
+    }
+    function updateControls() {
+      toggle.setAttribute("aria-checked", String(limit.enabled));
+      toggle.disabled = saving;
+      hours.disabled = minutes.disabled = saving || limit.enabled;
+    }
+    function selectedMinutes() {
+      return Number(hours.value) * 60 + Number(minutes.value);
+    }
+    async function saveLimit(next) {
+      saving = true;
+      status.textContent = "";
+      updateControls();
+      try {
+        await chrome.storage.local.set({ [LIMIT_KEY]: next });
+        limit = next;
+      } catch (error) {
+        showSelection();
+        status.textContent = chrome.i18n.getMessage("limitSaveError");
+      } finally {
+        saving = false;
+        updateControls();
+      }
+    }
+    toggle.addEventListener("click", () => {
+      const total = selectedMinutes();
+      if (!limit.enabled && !validMinutes(total)) {
+        status.textContent = chrome.i18n.getMessage("limitInvalid");
+        return;
+      }
+      void saveLimit({ enabled: !limit.enabled, minutes: total });
+    });
+    for (const select of [hours, minutes]) {
+      select.addEventListener("change", () => {
+        if (!limit.enabled && !saving) void saveLimit({ enabled: false, minutes: selectedMinutes() });
+      });
+    }
+    showSelection();
+    updateControls();
+  }
+
   function bindRanges() {
     document.getElementById("ranges").addEventListener("click", (e) => {
       const btn = e.target.closest(".range-btn");
@@ -197,6 +255,7 @@
 
     const all = await chrome.storage.local.get(null);
     applyTheme(all[THEME_KEY] || "auto");
+    bindLimit(all[Meter.LIMIT_KEY]);
 
     history = {};
     for (const [k, v] of Object.entries(all)) {
@@ -217,5 +276,7 @@
     });
   }
 
-  init();
+  void init().catch(() => {
+    document.getElementById("limit-status").textContent = chrome.i18n.getMessage("limitLoadError");
+  });
 })();

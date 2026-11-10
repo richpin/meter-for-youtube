@@ -114,15 +114,34 @@ async function pruneOldEntries() {
   }
 }
 
+// Only transient work coordination lives in memory. All totals remain in storage.
+// Queue every read/modify/write, including restore, so concurrent tabs cannot
+// overwrite one another's seconds. A failed operation must not poison the queue.
+let work = Promise.resolve();
+function enqueue(operation) {
+  const result = (async () => {
+    await work;
+    return operation();
+  })();
+  work = (async () => {
+    try { await result; } catch { /* caller receives the error */ }
+  })();
+  return result;
+}
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg.type === "ADD_TIME") {
-    addTime(msg.focus || 0, msg.watch || 0, msg.date).then((day) => sendResponse(day));
-    return true; // keep the channel open for the async response
-  }
-  if (msg.type === "GET_TODAY") {
-    getToday().then((day) => sendResponse(day));
-    return true;
-  }
+  if (msg.type !== "ADD_TIME" && msg.type !== "GET_TODAY") return;
+  void (async () => {
+    try {
+      const day = await enqueue(() => msg.type === "ADD_TIME"
+        ? addTime(msg.focus || 0, msg.watch || 0, msg.date)
+        : getToday());
+      sendResponse(day);
+    } catch (error) {
+      sendResponse({ error: error.message });
+    }
+  })();
+  return true;
 });
 
 // Restore before pruning so recovered days are pruned by the same rule.
@@ -131,5 +150,8 @@ async function bootstrap() {
   await pruneOldEntries();
 }
 
-chrome.runtime.onInstalled.addListener(bootstrap);
-chrome.runtime.onStartup.addListener(bootstrap);
+function start() {
+  void enqueue(bootstrap).catch((error) => console.warn("Meter: startup failed", error));
+}
+chrome.runtime.onInstalled.addListener(start);
+chrome.runtime.onStartup.addListener(start);

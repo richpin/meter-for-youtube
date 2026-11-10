@@ -15,22 +15,18 @@
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   let themeMode = "auto";
 
-  function todayKey() {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const d = String(now.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-
-  let currentDateKey = todayKey();
-  // Today's totals (seconds): latest total from storage + this session's un-flushed delta.
-  let storedToday = { focus: 0, watch: 0 };
-  let session = { focus: 0, watch: 0 }; // accumulated on this tab
-  let flushed = { focus: 0, watch: 0 }; // portion already sent to storage
-
-  let valueEls = null; // { focus, watch } — the number spans inside the overlay
+  const { todayKey, LIMIT_KEY, DEFAULT_LIMIT, limitReached } = Meter;
+  const ledgers = new Map();
+  let ledger;
+  let limit = DEFAULT_LIMIT;
+  let ready = false;
+  let initialChanges = {};
+  let blocking = false;
+  let redirecting = false;
+  let changingDay = false;
+  let valueEls = null;
   let tickCount = 0;
+  document.documentElement.setAttribute("data-meter-checking", "");
 
   // ---- (1) Metric checks ----------------------------------------------------
 
@@ -64,8 +60,8 @@
 
   function render() {
     if (!valueEls) return;
-    const curFocus = storedToday.focus + (session.focus - flushed.focus);
-    const curWatch = storedToday.watch + (session.watch - flushed.watch);
+    if (!ledger) return;
+    const { focus: curFocus, watch: curWatch } = ledger.total;
     valueEls.focus.textContent = fmt(curFocus);
     valueEls.watch.textContent = fmt(curWatch);
   }
@@ -87,7 +83,7 @@
   // ---- (3) Build overlay (Shadow DOM) ---------------------------------------
 
   function buildOverlay() {
-    if (document.getElementById(HOST_ID)) return; // skip if already present
+    if (!ready || blocking || !document.body || document.getElementById(HOST_ID)) return;
 
     const host = document.createElement("div");
     host.id = HOST_ID;
@@ -169,103 +165,140 @@
 
   // ---- Tracking loop --------------------------------------------------------
 
-  function checkDayRollover() {
-    const today = todayKey();
-    if (today !== currentDateKey) {
-      const oldDate = currentDateKey;
-      flush(oldDate);
-      currentDateKey = today;
-      storedToday = { focus: 0, watch: 0 };
-      session = { focus: 0, watch: 0 };
-      flushed = { focus: 0, watch: 0 };
-      render();
+  async function flushAll() {
+    for (const [date, entry] of ledgers) {
+      await entry.flush((message) => chrome.runtime.sendMessage(message));
+      if (entry !== ledger && !entry.pending.focus && !entry.pending.watch) ledgers.delete(date);
     }
   }
 
-  function tick() {
-    checkDayRollover();
-    if (isUsing()) session.focus += 1;
-    // Only count watch while the tab is the visible foreground tab, so audio
-    // playing on a hidden/background tab does not inflate watch past usage.
-    if (document.visibilityState === "visible" && isWatching()) session.watch += 1;
-    render();
-
-    tickCount += 1;
-    if (tickCount % FLUSH_INTERVAL_SEC === 0) flush();
+  function save() {
+    // Retain pending seconds on failure; the next tick/visibility change retries.
+    void flushAll().catch((error) => console.warn("Meter: could not save usage", error));
   }
 
-  function flush(dateKeyOverride) {
-    const focusDelta = session.focus - flushed.focus;
-    const watchDelta = session.watch - flushed.watch;
-    if (focusDelta === 0 && watchDelta === 0) return;
+  function pauseVideos() {
+    for (const video of document.querySelectorAll("video, audio")) video.pause();
+  }
 
-    const targetDate = dateKeyOverride || currentDateKey;
-    const sentFocus = session.focus;
-    const sentWatch = session.watch;
-    flushed.focus = sentFocus;
-    flushed.watch = sentWatch;
-
-    chrome.runtime.sendMessage(
-      { type: "ADD_TIME", focus: focusDelta, watch: watchDelta, date: targetDate },
-      () => {
-        if (chrome.runtime.lastError) {
-          // On failure, roll back so the next flush retries
-          flushed.focus -= focusDelta;
-          flushed.watch -= watchDelta;
-        }
+  async function enforceLimit() {
+    if (!ready || changingDay) return;
+    const reached = limitReached(limit, ledger.total.focus);
+    if (!reached) {
+      blocking = false;
+      document.documentElement.removeAttribute("data-meter-blocking");
+      ensureOverlay();
+      return;
+    }
+    blocking = true;
+    document.documentElement.setAttribute("data-meter-blocking", "");
+    pauseVideos();
+    if (redirecting) return;
+    redirecting = true;
+    try {
+      await flushAll();
+      // Settings may have changed, or midnight passed, while saving.
+      if (todayKey() === ledger.date && limitReached(limit, ledger.total.focus)) {
+        location.replace(chrome.runtime.getURL("src/blocked.html") + "#" + encodeURIComponent(location.href));
       }
-    );
+    } catch (error) {
+      console.warn("Meter: retrying final usage save", error);
+    } finally {
+      redirecting = false;
+    }
   }
 
-  // ---- Init -----------------------------------------------------------------
+  async function tick(accrue = true) {
+    if (!ready || changingDay) return;
+    const date = todayKey();
+    if (date !== ledger.date) {
+      changingDay = true;
+      try {
+        const stored = await chrome.storage.local.get(date);
+        ledger = new UsageLedger(date, stored[date]);
+        ledgers.set(date, ledger);
+        blocking = false;
+        save();
+      } catch (error) {
+        console.warn("Meter: could not load today's usage", error);
+        return;
+      } finally {
+        changingDay = false;
+      }
+    }
+    if (!blocking && accrue) {
+      if (isUsing()) ledger.pending.focus += 1;
+      if (document.visibilityState === "visible" && isWatching()) ledger.pending.watch += 1;
+    }
+    render();
+    await enforceLimit();
+    tickCount += 1;
+    if (tickCount % FLUSH_INTERVAL_SEC === 0) save();
+  }
 
-  function init() {
-    currentDateKey = todayKey();
-
-    chrome.storage.local.get([currentDateKey, THEME_KEY], (res) => {
-      if (chrome.runtime.lastError || !res) return;
-      if (res[currentDateKey]) storedToday = res[currentDateKey];
-      if (res[THEME_KEY]) themeMode = res[THEME_KEY];
-      applyTheme();
-      render();
-    });
-
-    buildOverlay();
-
-    // Repaint open YouTube tabs on theme change, and sync today's totals across tabs
+  async function init() {
+    // Subscribe before the initial read; refreshes use the current date, including
+    // on visibility changes after a suspended tab wakes up on a different day.
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== "local") return;
+      if (!ready) {
+        Object.assign(initialChanges, changes);
+        return;
+      }
       if (changes[THEME_KEY]) {
         themeMode = changes[THEME_KEY].newValue || "auto";
         applyTheme();
       }
-      if (changes[currentDateKey]) {
-        storedToday = changes[currentDateKey].newValue || { focus: 0, watch: 0 };
-        render();
+      if (changes[LIMIT_KEY]) limit = changes[LIMIT_KEY].newValue || DEFAULT_LIMIT;
+      for (const [date, entry] of ledgers) {
+        if (changes[date]) entry.update(changes[date].newValue || { focus: 0, watch: 0 });
       }
+      render();
+      if (todayKey() !== ledger.date) void tick(false);
+      else void enforceLimit();
     });
 
-    // Only relevant while following the OS setting.
+    try {
+      const date = todayKey();
+      const stored = await chrome.storage.local.get([date, THEME_KEY, LIMIT_KEY]);
+      // Include notifications delivered while the initial snapshot was loading.
+      for (const [key, change] of Object.entries(initialChanges)) stored[key] = change.newValue;
+      initialChanges = null;
+      ledger = new UsageLedger(date, stored[date]);
+      ledgers.set(date, ledger);
+      limit = stored[LIMIT_KEY] || DEFAULT_LIMIT;
+      themeMode = stored[THEME_KEY] || "auto";
+      ready = true;
+      await enforceLimit();
+    } finally {
+      document.documentElement.removeAttribute("data-meter-checking");
+    }
+
+    const attach = () => {
+      ensureOverlay();
+      const observer = new MutationObserver(() => {
+        ensureOverlay();
+        if (blocking) pauseVideos();
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", attach, { once: true });
+    else attach();
+
     darkQuery.addEventListener("change", () => {
       if (themeMode === "auto") applyTheme();
     });
-
-    // 1-second tracking tick
-    setInterval(tick, 1000);
-
-    // (2) SPA navigation: check the overlay each time YouTube swaps the page
+    setInterval(() => { void tick(); }, 1000);
     document.addEventListener("yt-navigate-finish", ensureOverlay);
-
-    // Safety net: re-attach if the overlay host gets removed entirely
-    const observer = new MutationObserver(ensureOverlay);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    // Final save when leaving or right before the tab closes
+    document.addEventListener("play", (event) => {
+      if (blocking && event.target instanceof HTMLMediaElement) event.target.pause();
+    }, true);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") flush();
+      if (document.visibilityState === "hidden") save();
+      else void tick(false);
     });
-    window.addEventListener("pagehide", () => flush());
+    window.addEventListener("pagehide", save);
   }
 
-  init();
+  void init().catch((error) => console.warn("Meter: initialization failed", error));
 })();
