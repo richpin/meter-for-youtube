@@ -1,6 +1,6 @@
 # Chrome Web Store Listing — Meter for YouTube
 
-Last Updated: 2026-11-10
+Last Updated: 2026-11-11
 
 ## Store Listing
 
@@ -10,17 +10,52 @@ Last Updated: 2026-11-10
 
 **Detailed Description:**
 
-See how much of your day YouTube is taking, with live usage and watch times shown
-on the page. Compare daily trends over 7, 30, or 90 days in the toolbar popup.
+Meter for YouTube — see how much time YouTube is really taking.
 
-Choose hours and minutes while the daily usage limit is off, then switch it on.
-Turn it off again to change the time. When you reach the limit, playback stops
-and a quiet break page replaces YouTube. Your allowance starts again at local
-midnight. The limit is off until you enable it.
+Meter for YouTube shows how much time you’ve spent on YouTube today, in real
+time, at the top-right of the page. Keep the numbers visible to pace yourself,
+or set an optional daily Usage limit when you want a clear stopping point.
 
-English and Korean are supported, with automatic, light, and dark themes.
-Your daily totals stay in your browser and your own Google account backup.
-Your settings stay on this device. Nothing is sent to the developer.
+WHAT YOU SEE ON THE PAGE
+
+A small overlay at the top-right shows two times:
+👀 Usage — total time spent on a focused YouTube tab, including browsing,
+searching, and reading comments
+🎬 Watch — time a video is actually playing
+
+The gap between them shows how much time went to browsing rather than watching.
+
+DAILY USAGE LIMIT
+
+Choose hours and minutes while the limit is off, then turn it on to apply your
+setting. When today’s Usage reaches the limit, playback stops and YouTube is
+replaced by a quiet break page. The limit resets at local midnight. Turn it off
+at any time to change the duration or resume using YouTube.
+
+TRENDS DASHBOARD
+
+Click the toolbar icon to open the popup:
+• Summary tiles for today’s Usage, today’s Watch, and your daily average Usage
+• A line chart comparing Usage and Watch across days, so you can see trends and
+the browsing gap over time
+• 7, 30, and 90-day range options
+
+PRIVACY FIRST
+
+Daily totals are stored in your browser and backed up through Chrome sync in
+your Google account, so your history can survive a reinstall. Theme and daily
+limit settings stay on this device. Beyond Chrome’s built-in sync backup, the
+extension makes no network requests and sends nothing to the developer or other
+third parties. Records older than 90 days are deleted automatically.
+
+LANGUAGES & THEME
+
+• Follows your browser language automatically, with English and Korean included
+• Supports light and dark themes on both the overlay and popup; choose Auto to
+follow your system, or select Light or Dark
+
+No separate account, no sign-up, and no ads. Just an honest meter for your
+YouTube time.
 
 **Category:** Productivity
 
@@ -33,6 +68,8 @@ Your settings stay on this device. Nothing is sent to the developer.
 | Asset | Dimensions | Status | Filename |
 |-------|------------|--------|----------|
 | Store icon | 128×128 PNG | Existing | icons/icon128.png |
+| Small promo tile | 440×280 PNG | Original layout restored | store/promo-small-440x280.png |
+| Marquee promo tile | 1400×560 PNG | Updated with daily usage limit | store/promo-marquee-1400x560.png |
 | Popup screenshot | 1280×800 or 640×400 | Needs capture with toggle and hour/minute menus | — |
 | Break page screenshot | 1280×800 or 640×400 | Needs capture, light and dark variants | — |
 
